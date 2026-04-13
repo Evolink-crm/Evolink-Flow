@@ -12,6 +12,7 @@ import Notifications from './pages/Notifications'
 import Settings from './pages/Settings'
 import Users from './pages/Users'
 import Documents from './pages/Documents'
+import Chat from './pages/Chat'
 
 function Protected({ children }) {
   const { session, loading } = useAuth()
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="validation" element={<ValidationCenter />} />
         <Route path="users" element={<Users />} />
         <Route path="documents" element={<Documents />} />
+        <Route path="chat" element={<Chat />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
       </Route>
