@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FolderKanban, ListChecks, ShieldCheck, Bell, Settings, Workflow, Users as UsersIcon, X } from 'lucide-react'
+import { LayoutDashboard, FolderKanban, ListChecks, ShieldCheck, Bell, Settings, Workflow, Users as UsersIcon, FileText, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const items = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/projects', label: 'Projets', icon: FolderKanban },
   { to: '/tasks', label: 'Tâches', icon: ListChecks },
+  { to: '/documents', label: 'Documents', icon: FileText },
   { to: '/validation', label: 'Validation', icon: ShieldCheck, adminOnly: true },
   { to: '/users', label: 'Utilisateurs', icon: UsersIcon, adminOnly: true },
   { to: '/notifications', label: 'Notifications', icon: Bell },
