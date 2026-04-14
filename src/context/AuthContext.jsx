@@ -67,11 +67,14 @@ export function AuthProvider({ children }) {
       p_username: username, p_password: password
     })
     if (error) return { error }
-    if (!data) return { error: { message: 'Identifiants invalides' } }
-    localStorage.setItem(CUSTOM_KEY, JSON.stringify(data))
-    setCustomUser(data)
-    setProfile(data)
-    return { data }
+    // La RPC peut retourner un objet avec tous les champs null quand
+    // aucune ligne ne correspond — il faut vérifier l'id.
+    const user = Array.isArray(data) ? data[0] : data
+    if (!user || !user.id) return { error: { message: 'Identifiants invalides' } }
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(user))
+    setCustomUser(user)
+    setProfile(user)
+    return { data: user }
   }
 
   const signUp = (email, password, meta) => supabase.auth.signUp({ email, password, options: { data: meta } })
