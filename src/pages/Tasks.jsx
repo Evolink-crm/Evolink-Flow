@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Plus, LayoutGrid, List as ListIcon } from 'lucide-react'
+import { Plus, LayoutGrid, List as ListIcon, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { supabase } from '../services/supabase'
 import { useTasks } from '../hooks/useTasks'
 import { useAuth } from '../context/AuthContext'
@@ -92,6 +93,7 @@ export default function Tasks() {
               <tr>
                 <th className="p-3">Tâche</th><th className="p-3">Module</th><th className="p-3">Statut</th>
                 <th className="p-3">Priorité</th><th className="p-3">Assigné</th><th className="p-3">Échéance</th>
+                {isAdmin && <th className="p-3 w-12"></th>}
               </tr>
             </thead>
             <tbody>
@@ -103,9 +105,18 @@ export default function Tasks() {
                   <td className="p-3 capitalize">{t.priority}</td>
                   <td className="p-3">{t.assignee?.name || '—'}</td>
                   <td className="p-3">{t.due_date ? format(new Date(t.due_date), 'dd MMM yyyy') : '—'}</td>
+                  {isAdmin && (
+                    <td className="p-3">
+                      <button onClick={async () => {
+                        if (!confirm(`Supprimer la tâche "${t.title}" ?`)) return
+                        const { error } = await supabase.from('tasks').delete().eq('id', t.id)
+                        if (error) toast.error(error.message); else { toast.success('Supprimée'); reload() }
+                      }} className="btn-ghost p-2 text-red-600"><Trash2 size={14} /></button>
+                    </td>
+                  )}
                 </tr>
               ))}
-              {filteredTasks.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">Aucune tâche.</td></tr>}
+              {filteredTasks.length === 0 && <tr><td colSpan={isAdmin ? 7 : 6} className="p-6 text-center text-slate-500">Aucune tâche.</td></tr>}
             </tbody>
           </table>
         </div>

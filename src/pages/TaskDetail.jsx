@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { ChevronRight, Plus, Trash2, Send, Pencil, Check, X } from 'lucide-react'
+import { ChevronRight, Plus, Trash2, Send, Pencil, Check, X, Trash } from 'lucide-react'
 import { format } from 'date-fns'
 import { supabase } from '../services/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -67,6 +67,12 @@ export default function TaskDetail() {
     if (!confirm('Refuser et supprimer cette tâche ?')) return
     await supabase.from('tasks').delete().eq('id', id); toast.success('Tâche refusée'); nav('/tasks')
   }
+  const deleteTask = async () => {
+    if (!confirm(`Supprimer définitivement la tâche "${task.title}" ?\nCette action est irréversible (sous-tâches et commentaires seront supprimés).`)) return
+    const { error } = await supabase.from('tasks').delete().eq('id', id)
+    if (error) return toast.error(error.message)
+    toast.success('Tâche supprimée'); nav('/tasks')
+  }
 
   const canEdit = isAdmin || (task.created_by === user.id && !task.is_validated)
 
@@ -91,6 +97,7 @@ export default function TaskDetail() {
                   </>
                 )}
                 {canEdit && <button onClick={() => setEdit(true)} className="btn-outline"><Pencil size={14} /> Modifier</button>}
+                {isAdmin && <button onClick={deleteTask} className="btn-outline text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"><Trash size={14} /> Supprimer</button>}
               </div>
             </div>
             <p className="text-slate-600 dark:text-slate-300 mt-3 whitespace-pre-wrap">{task.description || 'Aucune description.'}</p>
