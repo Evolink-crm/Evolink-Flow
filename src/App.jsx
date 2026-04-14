@@ -15,9 +15,9 @@ import Documents from './pages/Documents'
 import Chat from './pages/Chat'
 
 function Protected({ children }) {
-  const { session, loading } = useAuth()
+  const { isLogged, loading } = useAuth()
   if (loading) return <div className="h-screen grid place-items-center text-slate-500">Chargement…</div>
-  if (!session) return <Navigate to="/login" replace />
+  if (!isLogged) return <Navigate to="/login" replace />
   return children
 }
 

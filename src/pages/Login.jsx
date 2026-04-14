@@ -1,33 +1,31 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Workflow } from 'lucide-react'
+import { Workflow, Shield, Users } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-  const { session, signIn, signUp } = useAuth()
+  const { isLogged, signIn, signInTeam } = useAuth()
   const nav = useNavigate()
-  const [mode, setMode] = useState('signin')
-  const [form, setForm] = useState({ email: '', password: '', name: '', role: 'developer' })
+  const [mode, setMode] = useState('team') // 'team' (username) | 'admin' (email)
+  const [form, setForm] = useState({ identifier: '', password: '' })
   const [busy, setBusy] = useState(false)
 
-  if (session) return <Navigate to="/" replace />
+  if (isLogged) return <Navigate to="/" replace />
 
   const submit = async (e) => {
     e.preventDefault()
     setBusy(true)
     try {
-      if (mode === 'signin') {
-        const { error } = await signIn(form.email, form.password)
+      if (mode === 'admin') {
+        const { error } = await signIn(form.identifier, form.password)
         if (error) throw error
-        toast.success('Connecté')
-        nav('/')
       } else {
-        const { error } = await signUp(form.email, form.password, { name: form.name, role: form.role })
+        const { error } = await signInTeam(form.identifier, form.password)
         if (error) throw error
-        toast.success('Compte créé. Connectez-vous.')
-        setMode('signin')
       }
+      toast.success('Connecté')
+      nav('/')
     } catch (err) { toast.error(err.message) } finally { setBusy(false) }
   }
 
@@ -40,38 +38,46 @@ export default function Login() {
         </div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">Pilotez vos projets ERP en toute fluidité.</h1>
-          <p className="mt-4 text-white/80 max-w-md">Workflow de validation, Kanban temps réel, modules, sous-tâches & notifications — tout au même endroit.</p>
+          <p className="mt-4 text-white/80 max-w-md">Workflow de validation, Kanban temps réel, modules, sous-tâches & notifications.</p>
         </div>
         <div className="text-white/70 text-sm">© {new Date().getFullYear()} Evolink</div>
       </div>
 
       <div className="flex items-center justify-center p-6">
         <form onSubmit={submit} className="w-full max-w-md card p-8">
-          <h2 className="text-2xl font-semibold">{mode === 'signin' ? 'Connexion' : 'Créer un compte'}</h2>
-          <p className="text-sm text-slate-500 mb-6">Accédez à votre espace projet.</p>
+          <h2 className="text-2xl font-semibold">Connexion</h2>
+          <p className="text-sm text-slate-500 mb-5">Accédez à votre espace projet.</p>
 
-          {mode === 'signup' && (
-            <>
-              <label className="label">Nom</label>
-              <input className="input mb-3" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-              <label className="label">Rôle</label>
-              <select className="input mb-3" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-                <option value="admin">Admin (Chef de projet)</option>
-                <option value="uiux">UI/UX Designer</option>
-                <option value="developer">Développeur</option>
-              </select>
-            </>
-          )}
-          <label className="label">Email</label>
-          <input type="email" className="input mb-3" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+          <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 mb-5">
+            <button type="button" onClick={() => setMode('team')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition ${mode === 'team' ? 'bg-white dark:bg-slate-900 text-brand-700 shadow-sm' : 'text-slate-500'}`}>
+              <Users size={14} /> Équipe
+            </button>
+            <button type="button" onClick={() => setMode('admin')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition ${mode === 'admin' ? 'bg-white dark:bg-slate-900 text-brand-700 shadow-sm' : 'text-slate-500'}`}>
+              <Shield size={14} /> Admin
+            </button>
+          </div>
+
+          <label className="label">{mode === 'admin' ? 'Email' : "Nom d'utilisateur"}</label>
+          <input
+            type={mode === 'admin' ? 'email' : 'text'}
+            className="input mb-3" required
+            value={form.identifier}
+            onChange={e => setForm({ ...form, identifier: e.target.value })}
+            placeholder={mode === 'admin' ? 'admin@evolink.io' : 'john.doe'} />
+
           <label className="label">Mot de passe</label>
-          <input type="password" className="input mb-5" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={6} />
+          <input type="password" className="input mb-5" value={form.password}
+            onChange={e => setForm({ ...form, password: e.target.value })} required minLength={4} />
 
-          <button disabled={busy} className="btn-primary w-full">{busy ? '…' : (mode === 'signin' ? 'Se connecter' : 'Créer le compte')}</button>
+          <button disabled={busy} className="btn-primary w-full">{busy ? '…' : 'Se connecter'}</button>
 
-          <button type="button" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')} className="mt-4 text-sm text-brand-600 hover:underline w-full text-center">
-            {mode === 'signin' ? "Pas de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
-          </button>
+          <p className="text-xs text-slate-500 text-center mt-4">
+            {mode === 'admin'
+              ? 'Connexion sécurisée via Supabase Auth.'
+              : 'Votre compte équipe a été créé par un administrateur.'}
+          </p>
         </form>
       </div>
     </div>
